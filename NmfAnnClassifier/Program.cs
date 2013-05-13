@@ -37,7 +37,7 @@ namespace NmfAnnClassifier
                 while((s = reader.ReadLine()) != null)
                 {
                     //Read into memory
-                    list.AddRange(s.Split(new[] {','}).Select(val=>Double.Parse(val)));
+                    list.AddRange(s.Split(new[] {','}).Select(val=>Double.Parse(val) + 2.0d));
                     rows++;
                 }
             }
@@ -46,16 +46,18 @@ namespace NmfAnnClassifier
             //Scale each value from -2,2 to 0, 4
 
             //Create the problem from the matrix
-            var problem = new MatrixFactorization(packedWRows, packedHRows, v ,-1.42,1.42);
+            var problem = new MatrixFactorization(packedWRows, packedHRows, v, 0.0d, 3.42d);//-1.42,1.42);
             
             //Specify stoping conditions
-            int numIterations = 30000;
+            int numIterations = 15000;
             IRunCondition runCondition = new RunConditionFitness(numIterations, problem.AcceptableFitness);
             problem.RunCondition = runCondition;
             
             //Get the optimizer
-            SPSO optimizer = new SPSO();
+            Globals.Random = new RandomOps.MersenneTwister(); //For algo's that require Global Random
+            var optimizer = new MOL(); //PS,LUS OoM Ex : Reduced individuals PSOM, MOL
             double[] parameters = optimizer.DefaultParameters;
+            parameters[0] = 23;//manually set number of individuals
             
             //Set the optimizer problem
             optimizer.Problem = problem;
